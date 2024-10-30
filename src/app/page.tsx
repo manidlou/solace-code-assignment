@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Layout, Menu, theme, Input, Row, Col } from 'antd'
-import type { GetProps } from 'antd'
+import { Layout, Menu, theme, Input, Row, Col, Pagination } from 'antd'
+import type { GetProps, PaginationProps } from 'antd'
 import { Advocate } from '../components/advocate'
 
 type SearchProps = GetProps<typeof Input.Search>
@@ -14,33 +14,37 @@ const { Search } = Input
 const items = [{ key: '1', label: 'Advocates' }]
 
 export default function Home() {
-	const [advocates, setAdvocates] = useState([])
+	const [advocates, setAdvocates] = useState({ totalRows: 0, rows: [] })
+	const [searchTerm, setSearchTerm] = useState('')
+	const [page, setPage] = useState(1)
 
 	const {
 		token: { borderRadiusLG },
 	} = theme.useToken()
 
 	useEffect(() => {
-		console.log('fetching advocates...')
-		fetch('/api/advocates').then((response) => {
-			response.json().then((jsonResponse) => {
-				console.log('resp:', jsonResponse)
-				setAdvocates(jsonResponse.data)
-			})
-		})
-	}, [])
+		fetchAdvocates(searchTerm, page)
+	}, [searchTerm, page])
 
-	const onSearch: SearchProps['onSearch'] = (value, _e, info) => {
-		console.log(info?.source, value)
+	const fetchAdvocates = async (searchTerm: string, page: number) => {
+		const resp = await fetch(
+			`/api/advocates?${new URLSearchParams({
+				search: searchTerm,
+				page: page.toString(),
+			}).toString()}`
+		)
 
-		fetch(
-			`/api/advocates?${new URLSearchParams({ search: value }).toString()}`
-		).then((response) => {
-			response.json().then((jsonResponse) => {
-				console.log('resp:', jsonResponse)
-				setAdvocates(jsonResponse.data)
-			})
-		})
+		const jsonResp = await resp.json()
+
+		setAdvocates(jsonResp)
+	}
+
+	const onSearch: SearchProps['onSearch'] = async (value, _e, info) => {
+		setSearchTerm(value)
+	}
+
+	const onChangePage: PaginationProps['onChange'] = (page) => {
+		setPage(page)
 	}
 
 	return (
@@ -85,13 +89,24 @@ export default function Home() {
 						enterButton
 					/>
 
-					<Row gutter={[32, 32]}>
-						{advocates.map((advocate, i) => (
-							<Col key={i} span={8}>
-								<Advocate advocate={advocate} />
-							</Col>
-						))}
-					</Row>
+					{advocates && (
+						<>
+							<Pagination
+								current={page}
+								onChange={onChangePage}
+								total={advocates.totalRows}
+								style={{ marginBottom: 20 }}
+							/>
+
+							<Row gutter={[32, 32]}>
+								{advocates.rows.map((advocate, i) => (
+									<Col key={i} span={8}>
+										<Advocate advocate={advocate} />
+									</Col>
+								))}
+							</Row>
+						</>
+					)}
 				</div>
 			</Content>
 			<Footer style={{ textAlign: 'center' }}>
