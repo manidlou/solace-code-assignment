@@ -7,7 +7,7 @@ Instead of the original design, which was essentially a cluttered table, I used 
 
 ### How did I improve the frontend/backend performance?
 
-Originally, the app fetched all advocates from the backend, which isn’t efficient, especially for large datasets. I added pagination so that the app fetches data by page, improving backend performance since we no longer need to fetch the entire dataset. Pagination also enhances frontend performance by reducing load time, as we only fetch and render one page of data at a time.
+Originally, the app was fetching all advocates from the backend, which isn’t efficient, especially for large datasets. I added pagination so that the app fetches data by page, improving backend performance since we no longer need to fetch the entire dataset. Pagination also enhances frontend performance by reducing load time, as we only fetch and render one page of data at a time.
 
 ### Further Improvements
 
